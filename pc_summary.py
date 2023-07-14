@@ -72,7 +72,7 @@ class PlayCricketMatchSummary:
                 summary_data = self.get_result_data(result_id)
                 if summary_data["filename"] not in existing_summaries:
                     new_summaries.append(
-                        os.path.join(self.jpg_path, f'{summary_data["filename"]}.jpg')
+                        os.path.join(self.JPG_path, f'{summary_data["filename"]}.jpg')
                     )
                     self.get_club_logos(result_id)
                     self.write_summary_json(summary_data)
@@ -89,8 +89,8 @@ class PlayCricketMatchSummary:
     def get_existing_summaries(self):
         existing_summary_set = set()
         for file in os.listdir(self.jpg_path):
-            if file.endswith(".jpg"):
-                existing_summary_set.add(file.replace(".jpg", ""))
+            if file.endswith(".JPG"):
+                existing_summary_set.add(file.replace(".JPG", ""))
         return existing_summary_set
 
     def validate_match_detail(self, result_id):
@@ -117,8 +117,8 @@ class PlayCricketMatchSummary:
         image = Image.open(
             os.path.join(self.template_directory, summary_data["template_filename"])
         )
-        home_logo = Image.open(os.path.join(self.logos_directory, "home_club_logo.jpg"))
-        away_logo = Image.open(os.path.join(self.logos_directory, "away_club_logo.jpg"))
+        home_logo = Image.open(os.path.join(self.logos_directory, "home_club_logo.JPG"))
+        away_logo = Image.open(os.path.join(self.logos_directory, "away_club_logo.JPG"))
         home_logo = home_logo.resize((100, 100))
         away_logo = away_logo.resize((100, 100))
         image.paste(home_logo, (107, 180))
@@ -140,10 +140,10 @@ class PlayCricketMatchSummary:
                 anchor=conf["anchor"],
                 align="center",
             )
-        image.save(os.path.join(self.jpg_path, f'{summary_data["filename"]}.jpg'))
+        image.save(os.path.join(self.jpg_path, f'{summary_data["filename"]}.JPG'))
 
     def get_template_filename(self, data):
-        return f"{self.get_match_template_type(data)}_{self.get_exeter_cc_first_innings(data)}.jpg"
+        return f"{self.get_match_template_type(data)}_{self.get_exeter_cc_first_innings(data)}.JPG"
 
     def get_match_template_type(self, data):
         if (
@@ -184,13 +184,13 @@ class PlayCricketMatchSummary:
         logo_class = soup.find_all("p", {"class": "team-ttl team-cov"})
         url = logo_class[0].contents[1].attrs["src"]
         r = requests.get(url)
-        with open(os.path.join(self.logos_directory, "home_club_logo.jpg"), "wb") as f:
+        with open(os.path.join(self.logos_directory, "home_club_logo.JPG"), "wb") as f:
             f.write(r.content)
 
         logo_class = soup.find_all("p", {"class": "team-ttl team-att"})
         url = logo_class[0].contents[1].attrs["src"]
         r = requests.get(url)
-        with open(os.path.join(self.logos_directory, "away_club_logo.jpg"), "wb") as f:
+        with open(os.path.join(self.logos_directory, "away_club_logo.JPG"), "wb") as f:
             f.write(r.content)
 
     def get_result_data(self, match_id):
