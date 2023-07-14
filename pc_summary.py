@@ -72,7 +72,7 @@ class PlayCricketMatchSummary:
                 summary_data = self.get_result_data(result_id)
                 if summary_data["filename"] not in existing_summaries:
                     new_summaries.append(
-                        os.path.join(self.JPG_path, f'{summary_data["filename"]}.jpg')
+                        os.path.join(self.jpg_path, f'{summary_data["filename"]}.jpg')
                     )
                     self.get_club_logos(result_id)
                     self.write_summary_json(summary_data)
