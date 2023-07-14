@@ -26,6 +26,7 @@ def send_mail(send_from, send_to, subject, text, files=None):
         part["Content-Disposition"] = 'attachment; filename="%s"' % basename(f)
         msg.attach(part)
     smtp = smtplib.SMTP(host=host, port=port)
+    smtp.ehlo()
     smtp.starttls()  # Puts connection to SMTP server in TLS mode
     smtp.ehlo()
     smtp.login(user=send_from, password=email_password)
