@@ -1,0 +1,240 @@
+{
+    "match_type": {
+      "x": 540,
+      "y": 150,
+      "rgb": [0,0,0],
+      "scale": 20,
+      "anchor": "mm"
+    },
+    "match_summary": {
+      "x": 540,
+      "y": 215,
+      "rgb": [0,0,0],
+      "scale": 50,
+      "anchor": "mm"
+    },
+    "toss": {
+      "x": 540,
+      "y": 270,
+      "rgb": [0,0,0],
+      "scale": 18,
+      "anchor": "mm"
+    },
+    "innings_1_team": {
+      "x": 90,
+      "y": 340,
+      "rgb": [0,0,0],
+      "scale": 30,
+      "anchor": "lm"
+    },
+    "innings_1_overs": {
+      "x": 820,
+      "y": 340,
+      "rgb": [0,0,0],
+      "scale": 30,
+      "anchor": "rm"
+    },
+    "innings_1_score": {
+      "x": 925,
+      "y": 340,
+      "rgb": [0,0,0],
+      "scale": 30,
+      "anchor": "mm"
+    },
+    "innings_1_bat_1_name": {
+      "x": 90,
+      "y": 425,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_1_bat_1_runs": {
+      "x": 440,
+      "y": 425,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_1_bat_2_name": {
+      "x": 90,
+      "y": 488,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_1_bat_2_runs": {
+      "x": 440,
+      "y": 488,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_1_bat_3_name": {
+      "x": 90,
+      "y": 551,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_1_bat_3_runs": {
+      "x": 440,
+      "y": 551,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_1_bowl_1_name": {
+      "x": 575,
+      "y": 425,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_1_bowl_1_figures": {
+      "x": 925,
+      "y": 425,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_1_bowl_2_name": {
+      "x": 575,
+      "y": 488,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_1_bowl_2_figures": {
+      "x": 925,
+      "y": 488,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_1_bowl_3_name": {
+      "x": 575,
+      "y": 551,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_1_bowl_3_figures": {
+      "x": 925,
+      "y": 551,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_2_team": {
+      "x": 90,
+      "y": 632,
+      "rgb": [0,0,0],
+      "scale": 30,
+      "anchor": "lm"
+    },
+    "innings_2_overs": {
+      "x": 820,
+      "y": 632,
+      "rgb": [0,0,0],
+      "scale": 30,
+      "anchor": "rm"
+    },
+    "innings_2_score": {
+      "x": 925,
+      "y": 632,
+      "rgb": [0,0,0],
+      "scale": 30,
+      "anchor": "mm"
+    },
+    "innings_2_bat_1_name": {
+      "x": 90,
+      "y": 713,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_2_bat_1_runs": {
+      "x": 440,
+      "y": 713,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_2_bat_2_name": {
+      "x": 90,
+      "y": 776,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_2_bat_2_runs": {
+      "x": 440,
+      "y": 776,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_2_bat_3_name": {
+      "x": 90,
+      "y": 839,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_2_bat_3_runs": {
+      "x": 440,
+      "y": 839,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_2_bowl_1_name": {
+      "x": 575,
+      "y": 713,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_2_bowl_1_figures": {
+      "x": 925,
+      "y": 713,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_2_bowl_2_name": {
+      "x": 575,
+      "y": 776,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_2_bowl_2_figures": {
+      "x": 925,
+      "y": 776,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "innings_2_bowl_3_name": {
+      "x": 575,
+      "y": 839,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "lm"
+    },
+    "innings_2_bowl_3_figures": {
+      "x": 925,
+      "y": 839,
+      "rgb": [255, 255, 255],
+      "scale": 22,
+      "anchor": "mm"
+    },
+    "result": {
+      "x": 540,
+      "y": 925,
+      "rgb": [0,0,0],
+      "scale": 30,
+      "anchor": "mm"
+    }
+}
