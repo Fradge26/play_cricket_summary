@@ -15,7 +15,6 @@ from pathlib import Path
 
 class PlayCricketMatchSummary:
     def __init__(self):
-        Path.mkdir()
         self.play_cricket_api = PlayCricketAPI()
         self.script_path = os.path.dirname(os.path.realpath(__file__))
         self.json_path = os.path.join(self.script_path, "output", "json")
