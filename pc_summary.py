@@ -10,10 +10,12 @@ from PIL import ImageFont, ImageDraw, Image
 from bs4 import BeautifulSoup
 import requests
 from send_email import send_mail
+from pathlib import Path
 
 
 class PlayCricketMatchSummary:
     def __init__(self):
+        Path.mkdir()
         self.play_cricket_api = PlayCricketAPI()
         self.script_path = os.path.dirname(os.path.realpath(__file__))
         self.json_path = os.path.join(self.script_path, "output", "json")
@@ -25,6 +27,9 @@ class PlayCricketMatchSummary:
             os.path.join(self.script_path, "resources", "config.json")
         )
         self.logos_directory = os.path.join(self.script_path, "resources", "logos")
+        Path(self.logos_directory).mkdir(parents=True, exist_ok=True)
+        Path(self.jpg_path).mkdir(parents=True, exist_ok=True)
+        Path(self.json_path).mkdir(parents=True, exist_ok=True)
         self.dcl_divisions = (
             "PREMIER DIVISION",
             "A DIVISION",
