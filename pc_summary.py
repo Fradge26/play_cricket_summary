@@ -80,7 +80,7 @@ class PlayCricketMatchSummary:
         if new_summaries:
             send_mail(
                 send_from="fradge@hotmail.co.uk",
-                send_to=["fradge@hotmail.co.uk"],
+                send_to=["fradge@hotmail.co.uk", "billybuckingham00@gmail.com"],
                 subject=f'Exeter CC Match Summaries {datetime.datetime.today().strftime("%d_%m_%Y")}',
                 text="Exeter CC match summaries attached. Regards Fradge",
                 files=new_summaries
