@@ -7,8 +7,8 @@ from email.utils import COMMASPACE, formatdate
 import os
 
 
-email_password = os.environ["email_password"]
-host = "smpt-mail.outlook.com"
+email_password = os.environ.get("EMAIL_PASSWORD")
+host = "smtp-mail.outlook.com"
 port = 587
 
 
@@ -26,7 +26,6 @@ def send_mail(send_from, send_to, subject, text, files=None):
         part["Content-Disposition"] = 'attachment; filename="%s"' % basename(f)
         msg.attach(part)
     smtp = smtplib.SMTP(host=host, port=port)
-    smtp.ehlo()
     smtp.starttls()  # Puts connection to SMTP server in TLS mode
     smtp.ehlo()
     smtp.login(user=send_from, password=email_password)
