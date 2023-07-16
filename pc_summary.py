@@ -131,7 +131,6 @@ class PlayCricketMatchSummary:
                 ),
                 conf["scale"],
             )
-            print(summary_data[field_name])
             draw.text(
                 (conf["x"], conf["y"]),
                 summary_data[field_name],
