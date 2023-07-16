@@ -1,16 +1,16 @@
 import datetime
 import json
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-
-from play_cricket_api import PlayCricketAPI
+import requests
 from PIL import ImageFont, ImageDraw, Image
 from bs4 import BeautifulSoup
-import requests
+
+from play_cricket_api import PlayCricketAPI
 from send_email import send_mail
-from pathlib import Path
 
 
 class PlayCricketMatchSummary:
@@ -80,10 +80,10 @@ class PlayCricketMatchSummary:
         if new_summaries:
             send_mail(
                 send_from="fradge@hotmail.co.uk",
-                send_to=["fradge@hotmail.co.uk", "billybuckingham00@gmail.com"],
+                send_to=["fradge@hotmail.co.uk"],  # "billybuckingham00@gmail.com"],
                 subject=f'Exeter CC Match Summaries {datetime.datetime.today().strftime("%d_%m_%Y")}',
                 text="Exeter CC match summaries attached. Regards Fradge",
-                files=new_summaries
+                files=new_summaries,
             )
 
     def get_existing_summaries(self):
@@ -131,6 +131,7 @@ class PlayCricketMatchSummary:
                 ),
                 conf["scale"],
             )
+            print(summary_data[field_name])
             draw.text(
                 (conf["x"], conf["y"]),
                 summary_data[field_name],
@@ -180,13 +181,11 @@ class PlayCricketMatchSummary:
             f"https://exeter.play-cricket.com/website/results/{match_id}"
         )
         soup = BeautifulSoup(html_document, "html.parser")
-
         logo_class = soup.find_all("p", {"class": "team-ttl team-cov"})
         url = logo_class[0].contents[1].attrs["src"]
         r = requests.get(url)
         with open(os.path.join(self.logos_directory, "home_club_logo.JPG"), "wb") as f:
             f.write(r.content)
-
         logo_class = soup.find_all("p", {"class": "team-ttl team-att"})
         url = logo_class[0].contents[1].attrs["src"]
         r = requests.get(url)
@@ -254,10 +253,10 @@ class PlayCricketMatchSummary:
             ),
             "match_summary": "MATCH SUMMARY",
             "toss": self.replace_strings(match_details["toss"]).upper(),
-            "innings_1_team": match_details["innings"][0]["team_batting_name"]
-            .split(" - ")[0]
-            .upper(),
-            "innings_1_overs": f'OVERS {match_details["innings"][0]["overs"]}',
+            "innings_1_team": self.get_team_name(
+                match_details["innings"][0]["team_batting_name"]
+            ),
+            "innings_1_overs": f'OVERS {self.get_overs(match_details["innings"][0]["overs"])}',
             "innings_1_score": f'{match_details["innings"][0]["runs"]}/{match_details["innings"][0]["wickets"]}',
             "innings_1_bat_1_name": self.get_bat_name(innings_1_bat_df.loc[0]),
             "innings_1_bat_1_runs": self.get_bat_runs(innings_1_bat_df.loc[0]),
@@ -277,10 +276,10 @@ class PlayCricketMatchSummary:
             "innings_1_bowl_3_figures": self.get_bowler_figures(
                 innings_1_bowl_df.loc[2]
             ),
-            "innings_2_team": self.replace_strings(
-                match_details["innings"][1]["team_batting_name"].split(" - ")[0]
-            ).upper(),
-            "innings_2_overs": f'OVERS {match_details["innings"][1]["overs"]}',
+            "innings_2_team": self.get_team_name(
+                match_details["innings"][1]["team_batting_name"]
+            ),
+            "innings_2_overs": f'OVERS {self.get_overs(match_details["innings"][1]["overs"])}',
             "innings_2_score": f'{match_details["innings"][1]["runs"]}/{match_details["innings"][1]["wickets"]}',
             "innings_2_bat_1_name": self.get_bat_name(innings_2_bat_df.loc[0]),
             "innings_2_bat_1_runs": self.get_bat_runs(innings_2_bat_df.loc[0]),
@@ -302,15 +301,36 @@ class PlayCricketMatchSummary:
             ),
             "result": self.get_result_string(match_details),
             "template_filename": self.get_template_filename(match_details),
-            "filename": (
-                f'{match_details["match_date"].replace("/", "_")} '
-                f'{match_details["home_club_name"].replace(", Devon", "")} '
-                f'{match_details["home_team_name"].replace("Under ", "U")} vs '
-                f'{match_details["away_club_name"].replace(", Devon", "")} '
-                f'{match_details["away_team_name"].replace("Under ", "U")}'
-            ),
+            "filename": self.get_filename(match_details),
         }
         return summary_data
+
+    def get_team_name(self, name):
+        name = name.split(" - ")[0]
+        if len(name) > 28:
+            short_name = self.replace_strings(name).upper()
+            while len(short_name) > 28:
+                if " " not in short_name:
+                    return short_name[:28]
+                short_name = short_name.rsplit(" ", 1)[0]
+            return short_name
+        else:
+            return self.replace_strings(name).upper()
+
+    def get_overs(self, value):
+        if float(value).is_integer():
+            return str(int(float(value)))
+        else:
+            return value
+
+    def get_filename(self, match_details):
+        return (
+            f'{match_details["match_date"].replace("/", "_")} '
+            f'{self.replace_strings(match_details["home_club_name"])} '
+            f'{self.replace_strings(match_details["home_team_name"])} vs '
+            f'{self.replace_strings(match_details["away_club_name"])} '
+            f'{self.replace_strings(match_details["away_team_name"])}'
+        )
 
     def get_result_string(self, data):
         description = data["result_description"]
@@ -358,6 +378,9 @@ class PlayCricketMatchSummary:
             .replace(", Devon", "")
             .replace("Devon and County T20 Cups", "T20 XI")
             .replace("Twenty20 ", "")
+            .replace("!", "")
+            .replace("/", " ")
+            .replace("'", "")
         )
 
     @staticmethod
@@ -367,11 +390,8 @@ class PlayCricketMatchSummary:
         else:
             return f'{int(bat_series["runs"])}{"*" if bat_series["how_out"]=="not out" else ""} ({int(bat_series["balls"])})'
 
-    @staticmethod
-    def get_bowler_figures(bowl_series):
-        return (
-            f'{bowl_series["wickets"]}-{bowl_series["runs"]} ({bowl_series["overs"]})'
-        )
+    def get_bowler_figures(self, bowl_series):
+        return f'{bowl_series["wickets"]}-{bowl_series["runs"]} ({self.get_overs(bowl_series["overs"])})'
 
 
 if __name__ == "__main__":
