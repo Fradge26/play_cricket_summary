@@ -22,7 +22,7 @@ class PlayCricketMatchSummary:
         self.template_directory = os.path.join(
             self.script_path, "resources", "templates"
         )
-        self.jpg_config = self.load_json(
+        self.config = self.load_json(
             os.path.join(self.script_path, "resources", "config.json")
         )
         self.logos_directory = os.path.join(self.script_path, "resources", "logos")
@@ -58,7 +58,8 @@ class PlayCricketMatchSummary:
     def get_play_cricket_result_ids(self):
         from_match_date = datetime.datetime.now() - datetime.timedelta(days=7)
         results = self.play_cricket_api.get_result_summary(
-            from_match_date=from_match_date.strftime("%d/%m/%Y")
+            site_id=self.config["play cricket club site id"],
+            from_match_date=from_match_date.strftime("%d/%m/%Y"),
         )
         result_summary = results["result_summary"]
         match_ids = [m["id"] for m in result_summary if m["result"] != "M"]
@@ -67,6 +68,7 @@ class PlayCricketMatchSummary:
     def scrape_play_cricket_results(self):
         existing_summaries = self.get_existing_summaries()
         new_summaries = []
+        new_line = "\n"
         for result_id in self.get_play_cricket_result_ids():
             if self.validate_match_detail(result_id):
                 summary_data = self.get_result_data(result_id)
@@ -78,11 +80,13 @@ class PlayCricketMatchSummary:
                     self.write_summary_json(summary_data)
                     self.write_summary_jpg(summary_data)
         if new_summaries:
+            new_matches = [os.path.basename(m) for m in new_summaries]
             send_mail(
-                send_from="fradge@hotmail.co.uk",
-                send_to=["fradge@hotmail.co.uk", "billybuckingham00@gmail.com"],
-                subject=f'Exeter CC Match Summaries {datetime.datetime.today().strftime("%d_%m_%Y")}',
-                text="Exeter CC match summaries attached. Regards Fradge",
+                send_from=self.config["from email address"],
+                send_to=self.config["to email addresses"],
+                subject=f'{self.config["club name"]} Match Summaries {datetime.datetime.today().strftime("%d_%m_%Y")}',
+                text=f'{self.config["club name"]} match summaries attached for the following matches;\n'
+                f"{new_line.join(new_matches)}",
                 files=new_summaries,
             )
 
@@ -124,7 +128,7 @@ class PlayCricketMatchSummary:
         image.paste(home_logo, (107, 180))
         image.paste(away_logo, (875, 180))
         draw = ImageDraw.Draw(image)
-        for field_name, conf in self.jpg_config.items():
+        for conf in self.config.get("text fields", []):
             font = ImageFont.truetype(
                 os.path.join(
                     self.script_path, "resources", "font", "Montserrat-Regular.ttf"
@@ -133,7 +137,7 @@ class PlayCricketMatchSummary:
             )
             draw.text(
                 (conf["x"], conf["y"]),
-                summary_data[field_name],
+                summary_data[conf["field name"]],
                 font=font,
                 fill=tuple(conf["rgb"]),
                 spacing=4,
