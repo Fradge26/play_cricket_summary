@@ -1,6 +1,8 @@
 {
   "club name": "Exeter CC",
   "play cricket club site id": "2641",
+  "email host": "smtp-mail.outlook.com",
+  "email port": 587,
   "from email address": "fradge@hotmail.co.uk",
   "to email addresses": ["fradge@hotmail.co.uk", "billybuckingham00@gmail.com"],
   "text fields": [

@@ -8,11 +8,9 @@ import os
 
 
 email_password = os.environ.get("EMAIL_PASSWORD")
-host = "smtp-mail.outlook.com"
-port = 587
 
 
-def send_mail(send_from, send_to, subject, text, files=None):
+def send_mail(host, port, send_from, send_to, subject, text, files=None):
     assert isinstance(send_to, list)
     msg = MIMEMultipart()
     msg["From"] = send_from

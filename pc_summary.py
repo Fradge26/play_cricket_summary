@@ -82,6 +82,8 @@ class PlayCricketMatchSummary:
         if new_summaries:
             new_matches = [os.path.basename(m) for m in new_summaries]
             send_mail(
+                host=self.config["email host"],
+                port=self.config["email port"],
                 send_from=self.config["from email address"],
                 send_to=self.config["to email addresses"],
                 subject=f'{self.config["club name"]} Match Summaries {datetime.datetime.today().strftime("%d_%m_%Y")}',
