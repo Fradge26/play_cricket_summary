@@ -135,7 +135,7 @@ class PlayCricketMatchSummary:
         image.save(os.path.join(self.jpg_path, f'{summary_data["filename"]}.JPG'))
 
     def get_template_filename(self, data):
-        return f"{self.get_match_template_type(data)}_{self.get_exeter_cc_first_innings(data)}.JPG"
+        return f"{self.get_match_template_type(data)}_{self.get_this_club_first_innings(data)}.JPG"
 
     def get_match_template_type(self, data):
         if (
@@ -151,8 +151,8 @@ class PlayCricketMatchSummary:
         else:
             return "mens"
 
-    def get_exeter_cc_first_innings(self, data):
-        if "EXETER CC" in data["toss"].upper():
+    def get_this_club_first_innings(self, data):
+        if self.config["club name"].upper() in data["toss"].upper():
             if "ELECTED TO BAT" in data["toss"].upper():
                 return "batting_first"
             elif "ELECTED TO FIELD" in data["toss"].upper():
