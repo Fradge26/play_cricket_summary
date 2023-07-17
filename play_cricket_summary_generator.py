@@ -30,22 +30,8 @@ class PlayCricketMatchSummary:
         Path(self.jpg_path).mkdir(parents=True, exist_ok=True)
         Path(self.json_path).mkdir(parents=True, exist_ok=True)
         self.dcl_divisions = (
-            "PREMIER DIVISION",
-            "A DIVISION",
-            "B DIVISION",
-            "B DIVISION",
-            "C DIVISION EAST",
-            "C DIVISION WEST",
-            "D DIVISION EAST",
-            "D DIVISION WEST",
-            "E DIVISION EAST",
-            "E DIVISION WEST",
-            "F DIVISION EAST",
-            "F DIVISION WEST",
-            "G DIVISION EAST",
-            "G DIVISION WEST",
-            "H DIVISION EAST",
-            "H DIVISION WEST",
+            {"PREMIER DIVISION"} | set(f"{a} DIVISION" for a in "ABC")
+            | set(f"{a} DIVISION {d}" for a in "DEFGH" for d in ["EAST", "WEST"])
         )
 
     def main(self):
