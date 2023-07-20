@@ -1,5 +1,6 @@
 import datetime
 import json
+import logging
 import os
 from pathlib import Path
 
@@ -30,9 +31,28 @@ class PlayCricketMatchSummary:
         Path(self.jpg_path).mkdir(parents=True, exist_ok=True)
         Path(self.json_path).mkdir(parents=True, exist_ok=True)
         self.dcl_divisions = (
-            {"PREMIER DIVISION"} | set(f"{a} DIVISION" for a in "ABC")
+            {"PREMIER DIVISION"}
+            | set(f"{a} DIVISION" for a in "ABC")
             | set(f"{a} DIVISION {d}" for a in "DEFGH" for d in ["EAST", "WEST"])
         )
+
+        # set up logging to file
+        logging.basicConfig(
+            filename="pcsg.log",
+            level=logging.INFO,
+            format="[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s",
+            datefmt="%H:%M:%S",
+        )
+        # set up logging to console
+        console = logging.StreamHandler()
+        console.setLevel(logging.DEBUG)
+        # set a format which is simpler for console use
+        formatter = logging.Formatter("%(name)-12s: %(levelname)-8s %(message)s")
+        console.setFormatter(formatter)
+        # add the handler to the root logger
+        logging.getLogger("").addHandler(console)
+        self.logger = logging.getLogger(__name__)
+        self.logger.info(f"Starting run of play_cricket_summary_generator.py")
 
     def main(self):
         self.scrape_play_cricket_results()
@@ -65,7 +85,23 @@ class PlayCricketMatchSummary:
                     self.get_club_logos(result_id)
                     self.write_summary_json(summary_data)
                     self.write_summary_jpg(summary_data)
+                    self.logger.info(
+                        f'Summary graphic generated successfully for match: {summary_data["filename"]}'
+                    )
+                else:
+                    self.logger.info(
+                        f'Summary graphic not generated for match: {summary_data["filename"]} '
+                        f"because it has been produced previously"
+                    )
+            else:
+                self.logger.info(
+                    f"Summary graphic not generated for match id: {result_id} because it failed validation"
+                )
+
         if new_summaries:
+            self.logger.info(
+                f"Summary graphics generated for {len(new_summaries)} matches"
+            )
             new_matches = [os.path.basename(m) for m in new_summaries]
             send_mail(
                 host=self.config["email host"],
@@ -77,6 +113,9 @@ class PlayCricketMatchSummary:
                 f"{new_line.join(new_matches)}",
                 files=new_summaries,
             )
+            self.logger.info(f'Email sent to: {self.config["to email addresses"]}')
+        else:
+            self.logger.info(f'Email not sent because there were no new summaries to send')
 
     def get_existing_summaries(self):
         existing_summary_set = set()
