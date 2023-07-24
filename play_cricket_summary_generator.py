@@ -427,3 +427,14 @@ class PlayCricketMatchSummary:
 if __name__ == "__main__":
     pcms = PlayCricketMatchSummary()
     pcms.main()
+
+
+def generate_graphic_for_flask(match_id):
+    pcms = PlayCricketMatchSummary()
+    pcms.jpg_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "static")
+    summary_data = pcms.get_result_data(match_id)
+    pcms.get_club_logos(match_id)
+    pcms.write_summary_json(summary_data)
+    pcms.write_summary_jpg(summary_data)
+    return f'{summary_data["filename"]}.JPG'
+
