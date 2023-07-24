@@ -2,10 +2,8 @@ from flask import Flask, render_template, request
 import os
 from play_cricket_summary_generator import generate_graphic_for_flask
 
-IMAGE_FOLDER = os.path.join("static")
-
 app = Flask(__name__)
-app.config["UPLOAD_FOLDER"] = IMAGE_FOLDER
+app.config["UPLOAD_FOLDER"] = os.path.join("static")
 
 
 @app.route("/")
