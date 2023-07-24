@@ -1,4 +1,3 @@
- GNU nano 6.2                                                      cricketgraphic.kozow.com.wsgi
 import sys
 import logging
 import os
