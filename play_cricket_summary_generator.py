@@ -41,7 +41,7 @@ class PlayCricketMatchSummary:
             filename="pcsg.log",
             level=logging.INFO,
             format="[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s",
-            datefmt="%H:%M:%S",
+            datefmt="%Y-%m-%d,%H:%M:%S",
         )
         # set up logging to console
         console = logging.StreamHandler()
@@ -103,17 +103,23 @@ class PlayCricketMatchSummary:
                 f"Summary graphics generated for {len(new_summaries)} matches"
             )
             new_matches = [os.path.basename(m) for m in new_summaries]
-            send_mail(
-                host=self.config["email host"],
-                port=self.config["email port"],
-                send_from=self.config["from email address"],
-                send_to=self.config["to email addresses"],
-                subject=f'{self.config["club name"]} Match Summaries {datetime.datetime.today().strftime("%d_%m_%Y")}',
-                text=f'{self.config["club name"]} match summaries attached for the following matches;\n'
-                f"{new_line.join(new_matches)}",
-                files=new_summaries,
-            )
-            self.logger.info(f'Email sent to: {self.config["to email addresses"]}')
+            try:
+                send_mail(
+                    host=self.config["email host"],
+                    port=self.config["email port"],
+                    send_from=self.config["from email address"],
+                    send_to=self.config["to email addresses"],
+                    subject=f'{self.config["club name"]} Match Summaries {datetime.datetime.today().strftime("%d_%m_%Y")}',
+                    text=f'{self.config["club name"]} match summaries attached for the following matches;\n'
+                    f"{new_line.join(new_matches)}",
+                    files=new_summaries,
+                )
+                self.logger.info(f'Email sent to: {self.config["to email addresses"]}')
+            except Exception as e:
+                self.logger.error(
+                    f"Email sending failed with the following error: {e}"
+                )
+
         else:
             self.logger.info(f'Email not sent because there were no new summaries to send')
 
