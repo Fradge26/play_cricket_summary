@@ -76,7 +76,7 @@ class PlayCricketMatchSummary:
         new_summaries = []
         for result_id in self.get_play_cricket_result_ids():
             new_summaries = self.scrape_play_cricket_result(result_id, existing_summaries, new_summaries)
-        # self.email_summaries(new_summaries)
+        self.email_summaries(new_summaries)
 
     def scrape_play_cricket_result(self, result_id, existing_summaries, new_summaries):
         if self.validate_match_detail(result_id):
