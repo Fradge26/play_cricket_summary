@@ -75,10 +75,10 @@ class PlayCricketMatchSummary:
         existing_summaries = self.get_existing_summaries()
         new_summaries = []
         for result_id in self.get_play_cricket_result_ids():
-            self.scrape_play_cricket_result(result_id, existing_summaries, new_summaries)
+            new_summaries = self.scrape_play_cricket_result(result_id, existing_summaries, new_summaries)
+        self.email_summaries(new_summaries)
 
     def scrape_play_cricket_result(self, result_id, existing_summaries, new_summaries):
-        new_line = "\n"
         if self.validate_match_detail(result_id):
             summary_data = self.get_result_data(result_id)
             if summary_data["filename"] not in existing_summaries:
@@ -100,7 +100,10 @@ class PlayCricketMatchSummary:
             self.logger.info(
                 f"Summary graphic not generated for match id: {result_id} because it failed validation"
             )
+        return new_summaries
 
+    def email_summaries(self, new_summaries):
+        new_line = "\n"
         if new_summaries:
             self.logger.info(
                 f"Summary graphics generated for {len(new_summaries)} matches"
@@ -438,7 +441,6 @@ class PlayCricketMatchSummary:
 
 if __name__ == "__main__":
     pcms = PlayCricketMatchSummary()
-    pcms.scrape_play_cricket_result("5584085", {}, [])
     pcms.main()
 
 
