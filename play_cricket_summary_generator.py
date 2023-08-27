@@ -31,9 +31,9 @@ class PlayCricketMatchSummary:
         Path(self.jpg_path).mkdir(parents=True, exist_ok=True)
         Path(self.json_path).mkdir(parents=True, exist_ok=True)
         self.dcl_divisions = (
-            {"PREMIER DIVISION"}
-            | set(f"{a} DIVISION" for a in "ABC")
-            | set(f"{a} DIVISION {d}" for a in "DEFGH" for d in ["EAST", "WEST"])
+                {"PREMIER DIVISION"}
+                | set(f"{a} DIVISION" for a in "ABC")
+                | set(f"{a} DIVISION {d}" for a in "DEFGH" for d in ["EAST", "WEST"])
         )
 
         # set up logging to file
@@ -74,29 +74,32 @@ class PlayCricketMatchSummary:
     def scrape_play_cricket_results(self):
         existing_summaries = self.get_existing_summaries()
         new_summaries = []
-        new_line = "\n"
         for result_id in self.get_play_cricket_result_ids():
-            if self.validate_match_detail(result_id):
-                summary_data = self.get_result_data(result_id)
-                if summary_data["filename"] not in existing_summaries:
-                    new_summaries.append(
-                        os.path.join(self.jpg_path, f'{summary_data["filename"]}.JPG')
-                    )
-                    self.get_club_logos(result_id)
-                    self.write_summary_json(summary_data)
-                    self.write_summary_jpg(summary_data)
-                    self.logger.info(
-                        f'Summary graphic generated successfully for match: {summary_data["filename"]}'
-                    )
-                else:
-                    self.logger.info(
-                        f'Summary graphic not generated for match: {summary_data["filename"]} '
-                        f"because it has been produced previously"
-                    )
+            self.scrape_play_cricket_result(result_id, existing_summaries, new_summaries)
+
+    def scrape_play_cricket_result(self, result_id, existing_summaries, new_summaries):
+        new_line = "\n"
+        if self.validate_match_detail(result_id):
+            summary_data = self.get_result_data(result_id)
+            if summary_data["filename"] not in existing_summaries:
+                new_summaries.append(
+                    os.path.join(self.jpg_path, f'{summary_data["filename"]}.JPG')
+                )
+                self.get_club_logos(result_id)
+                self.write_summary_json(summary_data)
+                self.write_summary_jpg(summary_data)
+                self.logger.info(
+                    f'Summary graphic generated successfully for match: {summary_data["filename"]}'
+                )
             else:
                 self.logger.info(
-                    f"Summary graphic not generated for match id: {result_id} because it failed validation"
+                    f'Summary graphic not generated for match: {summary_data["filename"]} '
+                    f"because it has been produced previously"
                 )
+        else:
+            self.logger.info(
+                f"Summary graphic not generated for match id: {result_id} because it failed validation"
+            )
 
         if new_summaries:
             self.logger.info(
@@ -111,7 +114,7 @@ class PlayCricketMatchSummary:
                     send_to=self.config["to email addresses"],
                     subject=f'{self.config["club name"]} Match Summaries {datetime.datetime.today().strftime("%d_%m_%Y")}',
                     text=f'{self.config["club name"]} match summaries attached for the following matches;\n'
-                    f"{new_line.join(new_matches)}",
+                         f"{new_line.join(new_matches)}",
                     files=new_summaries,
                 )
                 self.logger.info(f'Email sent to: {self.config["to email addresses"]}')
@@ -134,11 +137,11 @@ class PlayCricketMatchSummary:
         response_json = self.play_cricket_api.get_match_detail(result_id)
         match_details = response_json["match_details"][0]
         if (
-            len(match_details["innings"]) < 2
-            or len(match_details["innings"][0]["bat"]) == 0
-            or len(match_details["innings"][0]["bowl"]) == 0
-            or len(match_details["innings"][1]["bat"]) == 0
-            or len(match_details["innings"][1]["bowl"]) == 0
+                len(match_details["innings"]) < 2
+                or len(match_details["innings"][0]["bat"]) == 0
+                or len(match_details["innings"][0]["bowl"]) == 0
+                or len(match_details["innings"][1]["bat"]) == 0
+                or len(match_details["innings"][1]["bowl"]) == 0
         ):
             return False
         else:
@@ -146,13 +149,15 @@ class PlayCricketMatchSummary:
 
     def write_summary_json(self, summary_data):
         with open(
-            os.path.join(self.json_path, f'{summary_data["filename"]}.json'), "w"
+                os.path.join(self.json_path, f'{summary_data["filename"]}.json'), "w"
         ) as out_file:
             out_file.write(json.dumps(summary_data, indent=4))
 
-    def write_summary_jpg(self, summary_data):
+    def write_summary_jpg(self, summary_data, template_name=None):
+        if template_name is None:
+            template_name = summary_data["template_filename"]
         image = Image.open(
-            os.path.join(self.template_directory, summary_data["template_filename"])
+            os.path.join(self.template_directory, template_name)
         )
         home_logo = Image.open(os.path.join(self.logos_directory, "home_club_logo.JPG"))
         away_logo = Image.open(os.path.join(self.logos_directory, "away_club_logo.JPG"))
@@ -184,13 +189,13 @@ class PlayCricketMatchSummary:
 
     def get_match_template_type(self, data):
         if (
-            "UNDER" in data["home_team_name"].upper()
-            or "UNDER" in data["away_team_name"].upper()
+                "UNDER" in data["home_team_name"].upper()
+                or "UNDER" in data["away_team_name"].upper()
         ):
             return "juniors"
         elif (
-            "WOMEN" in data["home_team_name"].upper()
-            or "WOMEN" in data["away_team_name"].upper()
+                "WOMEN" in data["home_team_name"].upper()
+                or "WOMEN" in data["away_team_name"].upper()
         ):
             return "womens"
         else:
@@ -294,47 +299,33 @@ class PlayCricketMatchSummary:
             ),
             "innings_1_overs": f'OVERS {self.get_overs(match_details["innings"][0]["overs"])}',
             "innings_1_score": f'{match_details["innings"][0]["runs"]}/{match_details["innings"][0]["wickets"]}',
-            "innings_1_bat_1_name": self.get_bat_name(innings_1_bat_df.loc[0]),
-            "innings_1_bat_1_runs": self.get_bat_runs(innings_1_bat_df.loc[0]),
-            "innings_1_bat_2_name": self.get_bat_name(innings_1_bat_df.loc[1]),
-            "innings_1_bat_2_runs": self.get_bat_runs(innings_1_bat_df.loc[1]),
-            "innings_1_bat_3_name": self.get_bat_name(innings_1_bat_df.loc[2]),
-            "innings_1_bat_3_runs": self.get_bat_runs(innings_1_bat_df.loc[2]),
-            "innings_1_bowl_1_name": self.get_bowl_name(innings_1_bowl_df.loc[0]),
-            "innings_1_bowl_1_figures": self.get_bowler_figures(
-                innings_1_bowl_df.loc[0]
-            ),
-            "innings_1_bowl_2_name": self.get_bowl_name(innings_1_bowl_df.loc[1]),
-            "innings_1_bowl_2_figures": self.get_bowler_figures(
-                innings_1_bowl_df.loc[1]
-            ),
-            "innings_1_bowl_3_name": self.get_bowl_name(innings_1_bowl_df.loc[2]),
-            "innings_1_bowl_3_figures": self.get_bowler_figures(
-                innings_1_bowl_df.loc[2]
-            ),
-            "innings_2_team": self.get_team_name(
-                match_details["innings"][1]["team_batting_name"]
-            ),
+            "innings_1_bat_1_name": self.get_bat_name(innings_1_bat_df, 0),
+            "innings_1_bat_1_runs": self.get_bat_runs(innings_1_bat_df, 0),
+            "innings_1_bat_2_name": self.get_bat_name(innings_1_bat_df, 1),
+            "innings_1_bat_2_runs": self.get_bat_runs(innings_1_bat_df, 1),
+            "innings_1_bat_3_name": self.get_bat_name(innings_1_bat_df, 2),
+            "innings_1_bat_3_runs": self.get_bat_runs(innings_1_bat_df, 2),
+            "innings_1_bowl_1_name": self.get_bowl_name(innings_1_bowl_df, 0),
+            "innings_1_bowl_1_figures": self.get_bowler_figures(innings_1_bowl_df, 0),
+            "innings_1_bowl_2_name": self.get_bowl_name(innings_1_bowl_df, 1),
+            "innings_1_bowl_2_figures": self.get_bowler_figures(innings_1_bowl_df, 1),
+            "innings_1_bowl_3_name": self.get_bowl_name(innings_1_bowl_df, 2),
+            "innings_1_bowl_3_figures": self.get_bowler_figures(innings_1_bowl_df, 2),
+            "innings_2_team": self.get_team_name(match_details["innings"][1]["team_batting_name"]),
             "innings_2_overs": f'OVERS {self.get_overs(match_details["innings"][1]["overs"])}',
             "innings_2_score": f'{match_details["innings"][1]["runs"]}/{match_details["innings"][1]["wickets"]}',
-            "innings_2_bat_1_name": self.get_bat_name(innings_2_bat_df.loc[0]),
-            "innings_2_bat_1_runs": self.get_bat_runs(innings_2_bat_df.loc[0]),
-            "innings_2_bat_2_name": self.get_bat_name(innings_2_bat_df.loc[1]),
-            "innings_2_bat_2_runs": self.get_bat_runs(innings_2_bat_df.loc[1]),
-            "innings_2_bat_3_name": self.get_bat_name(innings_2_bat_df.loc[2]),
-            "innings_2_bat_3_runs": self.get_bat_runs(innings_2_bat_df.loc[2]),
-            "innings_2_bowl_1_name": self.get_bowl_name(innings_2_bowl_df.loc[0]),
-            "innings_2_bowl_1_figures": self.get_bowler_figures(
-                innings_2_bowl_df.loc[0]
-            ),
-            "innings_2_bowl_2_name": self.get_bowl_name(innings_2_bowl_df.loc[1]),
-            "innings_2_bowl_2_figures": self.get_bowler_figures(
-                innings_2_bowl_df.loc[1]
-            ),
-            "innings_2_bowl_3_name": self.get_bowl_name(innings_2_bowl_df.loc[2]),
-            "innings_2_bowl_3_figures": self.get_bowler_figures(
-                innings_2_bowl_df.loc[2]
-            ),
+            "innings_2_bat_1_name": self.get_bat_name(innings_2_bat_df, 0),
+            "innings_2_bat_1_runs": self.get_bat_runs(innings_2_bat_df, 0),
+            "innings_2_bat_2_name": self.get_bat_name(innings_2_bat_df, 1),
+            "innings_2_bat_2_runs": self.get_bat_runs(innings_2_bat_df, 1),
+            "innings_2_bat_3_name": self.get_bat_name(innings_2_bat_df, 2),
+            "innings_2_bat_3_runs": self.get_bat_runs(innings_2_bat_df, 2),
+            "innings_2_bowl_1_name": self.get_bowl_name(innings_2_bowl_df, 0),
+            "innings_2_bowl_1_figures": self.get_bowler_figures(innings_2_bowl_df, 0),
+            "innings_2_bowl_2_name": self.get_bowl_name(innings_2_bowl_df, 1),
+            "innings_2_bowl_2_figures": self.get_bowler_figures(innings_2_bowl_df, 1),
+            "innings_2_bowl_3_name": self.get_bowl_name(innings_2_bowl_df, 2),
+            "innings_2_bowl_3_figures": self.get_bowler_figures(innings_2_bowl_df, 2),
             "result": self.get_result_string(match_details),
             "template_filename": self.get_template_filename(match_details),
             "filename": self.get_filename(match_details),
@@ -370,16 +361,18 @@ class PlayCricketMatchSummary:
 
     def get_result_string(self, data):
         description = data["result_description"]
+        if description == "Abandoned":
+            return "MATCH ABANDONED"
         if data["innings"][0]["team_batting_name"] in description:
             innings_1_target = self.get_revised_target(data)
             return (
-                self.replace_strings(description).upper()
-                + f' BY {innings_1_target - int(data["innings"][1]["runs"])} RUNS'
+                    self.replace_strings(description).upper()
+                    + f' BY {innings_1_target - int(data["innings"][1]["runs"])} RUNS'
             )
         elif data["innings"][1]["team_batting_name"] in description:
             return (
-                self.replace_strings(description).upper()
-                + f' BY {10 - int(data["innings"][1]["wickets"])} WICKETS'
+                    self.replace_strings(description).upper()
+                    + f' BY {10 - int(data["innings"][1]["wickets"])} WICKETS'
             )
         raise ValueError
 
@@ -395,14 +388,21 @@ class PlayCricketMatchSummary:
         else:
             return match_type
 
-    def get_bat_name(self, bat_series):
-        name = bat_series["batsman_name"]
+    def get_bat_name(self, bat_df, rank):
+        if len(bat_df) <= rank:
+            return ""
+        bat_row = bat_df.loc[rank]
+        name = bat_row["batsman_name"]
         if len(name) > 20:
             name = name.split(" ")[0][0] + " " + name.split(" ")[1]
         return name.upper()
 
-    def get_bowl_name(self, bat_series):
-        name = bat_series["bowler_name"]
+    def get_bowl_name(self, bowl_df, rank):
+        print(rank)
+        if len(bowl_df) <= rank:
+            return ""
+        bowl_row = bowl_df.loc[rank]
+        name = bowl_row["bowler_name"]
         if len(name) > 20:
             name = name.split(" ")[0][0] + " " + name.split(" ")[1]
         return name.upper()
@@ -420,27 +420,33 @@ class PlayCricketMatchSummary:
         )
 
     @staticmethod
-    def get_bat_runs(bat_series):
-        if np.isnan(bat_series["balls"]):
-            return f'{int(bat_series["runs"])}{"*" if bat_series["how_out"] == "not out" else ""}'
+    def get_bat_runs(bat_df, rank):
+        if len(bat_df) <= rank:
+            return ""
+        bat_row = bat_df.loc[rank]
+        if np.isnan(bat_row["balls"]):
+            return f'{int(bat_row["runs"])}{"*" if bat_row["how_out"] == "not out" else ""}'
         else:
-            return f'{int(bat_series["runs"])}{"*" if bat_series["how_out"]=="not out" else ""} ({int(bat_series["balls"])})'
+            return f'{int(bat_row["runs"])}{"*" if bat_row["how_out"] == "not out" else ""} ({int(bat_row["balls"])})'
 
-    def get_bowler_figures(self, bowl_series):
-        return f'{bowl_series["wickets"]}-{bowl_series["runs"]} ({self.get_overs(bowl_series["overs"])})'
+    def get_bowler_figures(self, bowl_df, rank):
+        if len(bowl_df) <= rank:
+            return ""
+        bowl_row = bowl_df.loc[rank]
+        return f'{bowl_row["wickets"]}-{bowl_row["runs"]} ({self.get_overs(bowl_row["overs"])})'
 
 
 if __name__ == "__main__":
     pcms = PlayCricketMatchSummary()
+    pcms.scrape_play_cricket_result("5584085", {}, [])
     pcms.main()
 
 
-def generate_graphic_for_flask(match_id):
+def generate_graphic_for_flask(match_id, template_name):
     pcms = PlayCricketMatchSummary()
     pcms.jpg_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "static")
     summary_data = pcms.get_result_data(match_id)
     pcms.get_club_logos(match_id)
     pcms.write_summary_json(summary_data)
-    pcms.write_summary_jpg(summary_data)
+    pcms.write_summary_jpg(summary_data, template_name)
     return f'{summary_data["filename"]}.JPG'
-
