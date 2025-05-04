@@ -126,6 +126,7 @@ class PlayCricketMatchSummary:
                     stderr=subprocess.PIPE,
                     text=True
                 )
+                self.logger.info(f"copying: {os.path.join(self.jpg_temp_path, basename)}, {os.path.join(self.jpg_sent_path, basename)}")
                 shutil.copy(os.path.join(self.jpg_temp_path, basename), os.path.join(self.jpg_sent_path, basename))
                 self.logger.info(result.stdout)
             except subprocess.CalledProcessError as e:
