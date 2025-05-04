@@ -116,6 +116,7 @@ class PlayCricketMatchSummary:
         album_name = "exeter_cc_scorecards"
         remote_path = f"gphotos:album/{album_name}"
         for path in new_summaries:
+            basename =os.path.basename(path)
             self.logger.info(f"Uploading: {path}")
             try:
                 result = subprocess.run(
@@ -125,7 +126,7 @@ class PlayCricketMatchSummary:
                     stderr=subprocess.PIPE,
                     text=True
                 )
-                shutil.copy(os.path.join(self.jpg_temp_path, path), os.path.join(self.jpg_sent_path, path))
+                shutil.copy(os.path.join(self.jpg_temp_path, basename), os.path.join(self.jpg_sent_path, basename))
                 self.logger.info(result.stdout)
             except subprocess.CalledProcessError as e:
                 self.logger.info(f"Error uploading {path}:\n{e.stderr}")
