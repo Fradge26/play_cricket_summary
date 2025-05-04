@@ -332,9 +332,7 @@ class PlayCricketMatchSummary:
             ),
             "match_summary": "MATCH SUMMARY",
             "toss": self.replace_strings(match_details["toss"]).upper(),
-            "innings_1_team": self.get_team_name(
-                match_details["innings"][0]["team_batting_name"]
-            ),
+            "innings_1_team": self.get_team_name(match_details["innings"][0]["team_batting_name"]),
             "innings_1_overs": f'OVERS {self.get_overs(match_details["innings"][0]["overs"])}',
             "innings_1_score": f'{match_details["innings"][0]["runs"]}/{match_details["innings"][0]["wickets"]}',
             "innings_1_bat_1_name": self.get_bat_name(innings_1_bat_df, 0),
@@ -371,16 +369,20 @@ class PlayCricketMatchSummary:
         return summary_data
 
     def get_team_name(self, name):
-        name = name.split(" - ")[0]
-        if len(name) > 28:
-            short_name = self.replace_strings(name).upper()
-            while len(short_name) > 28:
-                if " " not in short_name:
-                    return short_name[:28]
-                short_name = short_name.rsplit(" ", 1)[0]
-            return short_name
+        formatted_name = self.replace_strings(name).upper()
+        if len(formatted_name) <= 32:
+            return formatted_name
+        shorter_name = name.split(" - ")[0]
+        if len(shorter_name) <= 32:
+            return shorter_name
+        if len(shorter_name) > 32:
+            while len(formatted_name) > 32:
+                if " " not in formatted_name:
+                    return formatted_name[:32]
+                formatted_name = formatted_name.rsplit(" ", 1)[0]
+            return formatted_name
         else:
-            return self.replace_strings(name).upper()
+            return self.replace_strings(formatted_name).upper()
 
     def get_overs(self, value):
         if float(value).is_integer():
@@ -451,7 +453,8 @@ class PlayCricketMatchSummary:
     def replace_strings(self, string):
         return (
             string.replace(" - ", " ")
-            .replace("Under ", "U")
+            .replace(" Under ", " U")
+            .replace(", Devon DCL ", " ")
             .replace(", Devon", "")
             .replace("Devon and County T20 Cups", "T20 XI")
             .replace("Twenty20 ", "")
