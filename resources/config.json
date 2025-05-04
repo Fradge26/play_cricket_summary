@@ -4,7 +4,8 @@
   "email host": "smtp-mail.outlook.com",
   "email port": 587,
   "from email address": "fradge@hotmail.co.uk",
-  "to email addresses": ["fradge@hotmail.co.uk", "billybuckingham00@gmail.com"],
+  "to email addresses": ["fradge@hotmail.co.uk"],
+  "to email addresses2": ["fradge@hotmail.co.uk", "billybuckingham00@gmail.com"],
   "text fields": [
     {
       "field name": "match_type",

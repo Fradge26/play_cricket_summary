@@ -1,14 +1,132 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Index</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Cricket Summary Graphic Generator</title>
+    <style>
+  .image-container {
+    display: inline-block;
+    margin: 10px;
+  }
+  .image {
+    max-width: 200px;
+    max-height: 200px;
+  }
+  .selected-image {
+    max-width: 1080px;
+    max-height: 1080px;
+  }
+
+
+    </style>
 </head>
+
 <body>
-    <h1>Play Cricket Summary Graphic Generator</h1>
-    <form action="/graphic" method="post">
-        <label for="user_input">Play Cricket Match ID:</label>
-        <input type="text" id="user_input" name="user_input" required>
-        <input type="submit" value="Submit">
-    </form>
+<h1>Play Cricket Summary Graphic Generator</h1>
+<form action="/graphic" method="post">
+    <label for="user_input">Play Cricket Match ID:</label>
+    <br>
+    <input type="text" id="user_input" name="user_input" required>
+</form>
+
+<h3>Select template</h3>
+<div class="image-container">
+    <img src={{url_for('static', filename='juniors_batting_first.JPG' )}} alt="Image 1" class="image">
+    <br>
+    <input type="radio" id="image1" class="image-checkbox" name="image" value="juniors_batting_first.JPG">
+    <label for="image1">Juniors batting first</label>
+</div>
+
+<div class="image-container">
+    <img src={{url_for('static', filename='juniors_fielding_first.JPG' )}} alt="Image 4" class="image">
+    <br>
+    <input type="radio" id="image4" class="image-checkbox" name="image" value="juniors_fielding_first.JPG">
+    <label for="image4">Juniors fielding first</label>
+</div>
+
+<div class="image-container">
+    <img src={{url_for('static', filename='womens_batting_first.JPG' )}} alt="Image 2" class="image">
+    <br>
+    <input type="radio" id="image2" class="image-checkbox" name="image" value="womens_batting_first.JPG">
+    <label for="image2">Womens batting first</label>
+</div>
+
+<div class="image-container">
+    <img src={{url_for('static', filename='womens_fielding_first.JPG' )}} alt="Image 5" class="image">
+    <br>
+    <input type="radio" id="image5" class="image-checkbox" name="image" value="womens_fielding_first.JPG">
+    <label for="image5">Womens fielding first</label>
+</div>
+
+<div class="image-container">
+    <img src={{url_for('static', filename='mens_batting_first.JPG' )}} alt="Image 3" class="image">
+    <br>
+    <input type="radio" id="image3" class="image-checkbox" name="image" value="mens_batting_first.JPG">
+    <label for="image3">Mens batting first</label>
+</div>
+
+<div class="image-container">
+    <img src={{url_for('static', filename='mens_fielding_first.JPG' )}} alt="Image 6" class="image">
+    <br>
+    <input type="radio" id="image6" class="image-checkbox" name="image" value="mens_fielding_first.JPG">
+    <label for="image6">Mens fielding first</label>
+</div>
+<br>
+<button type="button" id="submit-button">Generate Graphic</button>
+<br>
+<div id="selected-image-container"></div>
+
+<script>
+            const imageCheckboxes = document.querySelectorAll('.image-checkbox');
+            imageCheckboxes.forEach(checkbox => {
+              checkbox.addEventListener('change', () => {
+                const image = checkbox.parentElement.querySelector('.image');
+                image.style.display = checkbox.checked ? 'inline' : 'none';
+              });
+            });
+
+
+</script>
+
+<script>
+document.getElementById('submit-button').addEventListener('click', function() {
+  const selectedImageRadio = document.querySelector('input[name="image"]:checked');
+  if (selectedImageRadio) {
+      const selectedImageValue = selectedImageRadio.value;
+      const selectedImageFilename = selectedImageValue.split('/').pop(); // Extract the filename
+      console.log('Selected image filename:', selectedImageFilename);
+
+      // Perform further actions with the filename
+  } else {
+    console.log('No image selected.');
+  }
+  const selectedImageFilename = selectedImageRadio.value;
+  const userInput = document.querySelector('input[name="user_input"]').value;
+  const formData = new FormData();
+  formData.append('template_name', selectedImageFilename);
+  formData.append('match_id', userInput);
+
+  fetch('/graphic', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+    // Update the selected image container with the chosen image
+    const selectedImageContainer = document.getElementById('selected-image-container');
+    selectedImageContainer.innerHTML = `
+      <br>
+      <img src="${data.image_path}" alt="output graphic" class="image-selected-image">
+    `;
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+});
+
+</script>
 </body>
 </html>
+

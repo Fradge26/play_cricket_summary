@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify, url_for
 import os
 from play_cricket_summary_generator import generate_graphic_for_flask
 
@@ -13,10 +13,12 @@ def home():
 
 @app.route("/graphic", methods=["POST"])
 def graphic():
-    match_id = request.form["user_input"]
-    graphic_filename = generate_graphic_for_flask(match_id)
-    full_filename = os.path.join(app.config["UPLOAD_FOLDER"], graphic_filename)
-    return render_template("index.html", user_image=full_filename)
+    match_id = request.form["match_id"]
+    template_name = request.form["template_name"]
+    print(request.form)
+    graphic_filename = generate_graphic_for_flask(match_id, template_name)
+    response_data = {'image_path': url_for("static", filename=graphic_filename)}
+    return jsonify(response_data)
 
 
 if __name__ == "__main__":

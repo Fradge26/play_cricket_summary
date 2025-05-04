@@ -50,3 +50,7 @@ class PlayCricketAPI:
             request_string += f"&end_match_date={end_match_date}"
         response = requests.get(request_string)
         return response.json()
+
+
+if __name__ == "__main__":
+    play_cricket_api = PlayCricketAPI()

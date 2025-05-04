@@ -2,6 +2,8 @@ import datetime
 import json
 import logging
 import os
+import shutil
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -19,7 +21,8 @@ class PlayCricketMatchSummary:
         self.play_cricket_api = PlayCricketAPI()
         self.script_path = os.path.dirname(os.path.realpath(__file__))
         self.json_path = os.path.join(self.script_path, "output", "json")
-        self.jpg_path = os.path.join(self.script_path, "output", "jpg")
+        self.jpg_temp_path = os.path.join(self.script_path, "output", "jpg", "temp")
+        self.jpg_sent_path = os.path.join(self.script_path, "output", "jpg", "sent")
         self.template_directory = os.path.join(
             self.script_path, "resources", "templates"
         )
@@ -28,7 +31,8 @@ class PlayCricketMatchSummary:
         )
         self.logos_directory = os.path.join(self.script_path, "resources", "logos")
         Path(self.logos_directory).mkdir(parents=True, exist_ok=True)
-        Path(self.jpg_path).mkdir(parents=True, exist_ok=True)
+        Path(self.jpg_sent_path).mkdir(parents=True, exist_ok=True)
+        Path(self.jpg_temp_path).mkdir(parents=True, exist_ok=True)
         Path(self.json_path).mkdir(parents=True, exist_ok=True)
         self.dcl_divisions = (
                 {"PREMIER DIVISION"}
@@ -47,7 +51,7 @@ class PlayCricketMatchSummary:
         console = logging.StreamHandler()
         console.setLevel(logging.DEBUG)
         # set a format which is simpler for console use
-        formatter = logging.Formatter("%(name)-12s: %(levelname)-8s %(message)s")
+        formatter = logging.Formatter("%(asctime)s - %(name)-12s: %(levelname)-8s %(message)s")
         console.setFormatter(formatter)
         # add the handler to the root logger
         logging.getLogger("").addHandler(console)
@@ -72,25 +76,31 @@ class PlayCricketMatchSummary:
         return match_ids
 
     def scrape_play_cricket_results(self):
-        existing_summaries = self.get_existing_summaries()
+        existing_summaries = self.get_sent_summaries()
         new_summaries = []
         for result_id in self.get_play_cricket_result_ids():
-            new_summaries = self.scrape_play_cricket_result(result_id, existing_summaries, new_summaries)
-        self.email_summaries(new_summaries)
+            new_summary = self.scrape_play_cricket_result(result_id, existing_summaries)
+            if new_summary:
+                new_summaries.append(new_summary)
+        self.sync_summaries(new_summaries)
 
-    def scrape_play_cricket_result(self, result_id, existing_summaries, new_summaries):
+    def scrape_play_cricket_result(self, result_id, existing_summaries):
         if self.validate_match_detail(result_id):
             summary_data = self.get_result_data(result_id)
             if summary_data["filename"] not in existing_summaries:
-                new_summaries.append(
-                    os.path.join(self.jpg_path, f'{summary_data["filename"]}.JPG')
-                )
-                self.get_club_logos(result_id)
-                self.write_summary_json(summary_data)
-                self.write_summary_jpg(summary_data)
-                self.logger.info(
-                    f'Summary graphic generated successfully for match: {summary_data["filename"]}'
-                )
+                try:
+                    self.get_club_logos(result_id)
+                    self.write_summary_json(summary_data)
+                    self.write_summary_jpg(summary_data)
+                    self.logger.info(
+                        f'Summary graphic generated successfully for match: {summary_data["filename"]}'
+                    )
+                    return os.path.join(self.jpg_temp_path, f'{summary_data["filename"]}.JPG')
+                except Exception as e:
+                    self.logger.warning(
+                        f'Summary graphic error for match: {summary_data["filename"]} {e}'
+                    )
+                    return None
             else:
                 self.logger.info(
                     f'Summary graphic not generated for match: {summary_data["filename"]} '
@@ -100,9 +110,28 @@ class PlayCricketMatchSummary:
             self.logger.info(
                 f"Summary graphic not generated for match id: {result_id} because it failed validation"
             )
-        return new_summaries
+        return None
+
+    def sync_summaries(self, new_summaries):
+        album_name = "exeter_cc_scorecards"
+        remote_path = f"gphotos:album/{album_name}"
+        for path in new_summaries:
+            self.logger.info(f"Uploading: {path}")
+            try:
+                result = subprocess.run(
+                    ["rclone", "copy", path, remote_path, "--progress"],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                shutil.copy(os.path.join(self.jpg_temp_path, path), os.path.join(self.jpg_sent_path, path))
+                self.logger.info(result.stdout)
+            except subprocess.CalledProcessError as e:
+                self.logger.info(f"Error uploading {path}:\n{e.stderr}")
 
     def email_summaries(self, new_summaries):
+        self.logger.info(os.environ.get("EMAIL_PASSWORD"))
         new_line = "\n"
         if new_summaries:
             self.logger.info(
@@ -121,6 +150,8 @@ class PlayCricketMatchSummary:
                     files=new_summaries,
                 )
                 self.logger.info(f'Email sent to: {self.config["to email addresses"]}')
+                for file in new_matches:
+                    shutil.copy(os.path.join(self.jpg_temp_path, file), os.path.join(self.jpg_sent_path, file))
             except Exception as e:
                 self.logger.error(
                     f"Email sending failed with the following error: {e}"
@@ -129,9 +160,9 @@ class PlayCricketMatchSummary:
         else:
             self.logger.info(f'Email not sent because there were no new summaries to send')
 
-    def get_existing_summaries(self):
+    def get_sent_summaries(self):
         existing_summary_set = set()
-        for file in os.listdir(self.jpg_path):
+        for file in os.listdir(self.jpg_sent_path):
             if file.endswith(".JPG"):
                 existing_summary_set.add(file.replace(".JPG", ""))
         return existing_summary_set
@@ -146,6 +177,8 @@ class PlayCricketMatchSummary:
                 or len(match_details["innings"][1]["bat"]) == 0
                 or len(match_details["innings"][1]["bowl"]) == 0
         ):
+            return False
+        elif not self.get_result_string(match_details):
             return False
         else:
             return True
@@ -185,7 +218,7 @@ class PlayCricketMatchSummary:
                 anchor=conf["anchor"],
                 align="center",
             )
-        image.save(os.path.join(self.jpg_path, f'{summary_data["filename"]}.JPG'))
+        image.save(os.path.join(self.jpg_temp_path, f'{summary_data["filename"]}.JPG'))
 
     def get_template_filename(self, data):
         return f"{self.get_match_template_type(data)}_{self.get_this_club_first_innings(data)}.JPG"
@@ -354,8 +387,10 @@ class PlayCricketMatchSummary:
             return value
 
     def get_filename(self, match_details):
+        dt = datetime.datetime.strptime(match_details["match_date"], "%d/%m/%Y")
+        output_date = dt.strftime("%Y_%m_%d")
         return (
-            f'{match_details["match_date"].replace("/", "_")} '
+            f'{output_date} '
             f'{self.replace_strings(match_details["home_club_name"])} '
             f'{self.replace_strings(match_details["home_team_name"])} vs '
             f'{self.replace_strings(match_details["away_club_name"])} '
@@ -373,11 +408,13 @@ class PlayCricketMatchSummary:
                     + f' BY {innings_1_target - int(data["innings"][1]["runs"])} RUNS'
             )
         elif data["innings"][1]["team_batting_name"] in description:
+            if data["innings"][1]["wickets"] == '':
+                return None
             return (
                     self.replace_strings(description).upper()
                     + f' BY {10 - int(data["innings"][1]["wickets"])} WICKETS'
             )
-        raise ValueError
+        return None
 
     def get_revised_target(self, data):
         if data["innings"][1]["revised_target_runs"]:
@@ -426,6 +463,8 @@ class PlayCricketMatchSummary:
         if len(bat_df) <= rank:
             return ""
         bat_row = bat_df.loc[rank]
+        if bat_row["how_out"] == "did not bat":
+            return ''
         if np.isnan(bat_row["balls"]):
             return f'{int(bat_row["runs"])}{"*" if bat_row["how_out"] == "not out" else ""}'
         else:
@@ -445,7 +484,7 @@ if __name__ == "__main__":
 
 def generate_graphic_for_flask(match_id, template_name):
     pcms = PlayCricketMatchSummary()
-    pcms.jpg_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "static")
+    pcms.jpg_sent_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "static")
     summary_data = pcms.get_result_data(match_id)
     pcms.get_club_logos(match_id)
     pcms.write_summary_json(summary_data)
