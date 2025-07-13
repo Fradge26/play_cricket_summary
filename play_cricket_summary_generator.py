@@ -83,7 +83,7 @@ class PlayCricketMatchSummary:
             new_summary = self.scrape_play_cricket_result(result_id, existing_summaries)
             if new_summary:
                 new_summaries.append(new_summary)
-        self.sync_summaries(new_summaries)
+        # self.sync_summaries(new_summaries)
 
     def scrape_play_cricket_result(self, result_id, existing_summaries):
         if self.validate_match_detail(result_id):
