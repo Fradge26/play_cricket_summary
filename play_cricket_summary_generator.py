@@ -23,6 +23,7 @@ class PlayCricketMatchSummary:
         self.json_path = os.path.join(self.script_path, "output", "json")
         self.jpg_temp_path = os.path.join(self.script_path, "output", "jpg", "temp")
         self.jpg_sent_path = os.path.join(self.script_path, "output", "jpg", "sent")
+        self.jpg_apache_directory = "/mnt/storage_1/images/exeter_cc_scorecards"
         self.template_directory = os.path.join(
             self.script_path, "resources", "templates"
         )
@@ -220,7 +221,9 @@ class PlayCricketMatchSummary:
                 anchor=conf["anchor"],
                 align="center",
             )
-        image.save(os.path.join(self.jpg_temp_path, f'{summary_data["filename"]}.JPG'))
+        image_path = os.path.join(self.jpg_temp_path, f'{summary_data["filename"]}.JPG')
+        image.save(image_path)
+        shutil.copy(image_path, self.jpg_apache_directory)
 
     def get_template_filename(self, data):
         return f"{self.get_match_template_type(data)}_{self.get_this_club_first_innings(data)}.JPG"
