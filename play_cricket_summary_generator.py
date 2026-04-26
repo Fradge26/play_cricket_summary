@@ -67,7 +67,7 @@ class PlayCricketMatchSummary:
             return json.load(json_file)
 
     def get_play_cricket_result_ids(self):
-        from_match_date = datetime.datetime.now() - datetime.timedelta(days=7)
+        from_match_date = datetime.datetime.now() - datetime.timedelta(days=30)
         results = self.play_cricket_api.get_result_summary(
             site_id=self.config["play cricket club site id"],
             from_match_date=from_match_date.strftime("%d/%m/%Y"),
