@@ -223,7 +223,11 @@ class PlayCricketMatchSummary:
             )
         image_path = os.path.join(self.jpg_temp_path, f'{summary_data["filename"]}.JPG')
         image.save(image_path)
-        shutil.copy(image_path, self.jpg_apache_directory)
+        apache_output_directory = os.path.join(
+            self.jpg_apache_directory, summary_data["match_year"]
+        )
+        Path(apache_output_directory).mkdir(parents=True, exist_ok=True)
+        shutil.copy(image_path, apache_output_directory)
 
     def get_template_filename(self, data):
         return f"{self.get_match_template_type(data)}_{self.get_this_club_first_innings(data)}.JPG"
@@ -330,6 +334,9 @@ class PlayCricketMatchSummary:
         )
         innings_2_bowl_df.reset_index(inplace=True)
         summary_data = {
+            "match_year": datetime.datetime.strptime(
+                match_details["match_date"], "%d/%m/%Y"
+            ).strftime("%Y"),
             "match_type": self.get_match_type(
                 match_details["competition_name"].upper()
             ),
