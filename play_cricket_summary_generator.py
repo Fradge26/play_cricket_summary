@@ -212,6 +212,24 @@ class PlayCricketMatchSummary:
                 ),
                 conf["scale"],
             )
+            if "background_rgb" in conf:
+                padding = conf.get("background_padding", [0, 0, 0, 0])
+                text_bbox = draw.textbbox(
+                    (conf["x"], conf["y"]),
+                    summary_data[conf["field name"]],
+                    font=font,
+                    spacing=4,
+                    anchor=conf["anchor"],
+                    align="center",
+                )
+                left = text_bbox[0] - padding[0]
+                top = text_bbox[1] - padding[1]
+                right = text_bbox[2] + padding[2]
+                bottom = text_bbox[3] + padding[3]
+                draw.rectangle(
+                    (left, top, right, bottom),
+                    fill=tuple(conf["background_rgb"]),
+                )
             draw.text(
                 (conf["x"], conf["y"]),
                 summary_data[conf["field name"]],
